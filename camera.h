@@ -6,6 +6,7 @@
 #include "ray.h"
 #include "color.h"
 #include "rtweekend.h"
+#include "material.h"
 
 class camera
 {
@@ -107,8 +108,11 @@ private:
 
         if (world.hit(r, interval(0.001, infinity), rec)) // 0.001 Because of Shadow Acne (intersection point can fall under the surface of the hit object because of rounding errors)
         {
-            vec3 direction = rec.normal + random_unit_vector();
-            return 0.5 * ray_color(ray(rec.p, direction), depth - 1, world);
+            ray scattered;
+            color attenuation;
+            if (rec.mat->scatter(r, rec, attenuation, scattered))
+                return attenuation * ray_color(scattered, depth - 1, world);
+            return color(0, 0, 0);
         }
 
         vec3 unit_direction = unit_vector(r.direction());
